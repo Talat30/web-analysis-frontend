@@ -16,6 +16,9 @@ import {
   Line,
 } from "recharts";
 
+// ✅ Load API base from environment
+const API_BASE = import.meta.env.VITE_API_URL || "https://web-analysis-backend-server.onrender.com";
+
 export default function Analytics() {
   const [data, setData] = useState(null);
   const [timeSeries, setTimeSeries] = useState(null);
@@ -46,7 +49,7 @@ export default function Analytics() {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const res = await fetch("/api/analytics");
+        const res = await fetch(`${API_BASE}/analytics`);
         if (!res.ok) throw new Error("Server returned an error");
         const json = await res.json();
         console.log("✅ Analytics data:", json);
@@ -59,15 +62,15 @@ export default function Analytics() {
 
     const fetchTimeSeries = async () => {
       try {
-        const res = await fetch("/api/time-series");
+        const res = await fetch(`${API_BASE}/time-series`);
         if (!res.ok) throw new Error("Server returned an error");
         const json = await res.json();
         console.log("✅ Time-series data:", json);
         setTimeSeries(json);
         // Initialize line chart types to 'visits' for each page
         const initialTypes = {};
-        Object.keys(json).forEach(page => {
-          initialTypes[page] = 'visits';
+        Object.keys(json).forEach((page) => {
+          initialTypes[page] = "visits";
         });
         setLineChartTypes(initialTypes);
       } catch (err) {
@@ -139,7 +142,7 @@ export default function Analytics() {
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Bar Chart for Page Visits */}
+          {/* Bar Chart */}
           <div className="bg-gray-700 rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4 text-white">
               Page Visits
@@ -167,9 +170,8 @@ export default function Analytics() {
             </ResponsiveContainer>
           </div>
 
-          {/* Pie Chart for Time Distribution */}
+          {/* Pie Chart */}
           <div className="bg-gray-700 rounded-lg p-6 relative">
-            {/* Button aligned top-left */}
             <button
               onClick={() =>
                 setChartType(chartType === "avg" ? "total" : "avg")
@@ -226,7 +228,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Line Charts for Time-Series Activity */}
+        {/* Line Charts */}
         {timeSeries && (
           <div className="space-y-8">
             <h2 className="text-2xl font-bold text-center text-white">
@@ -234,25 +236,43 @@ export default function Analytics() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {Object.entries(timeSeries).map(([page, data]) => {
-                const currentType = lineChartTypes[page] || 'visits';
+                const currentType = lineChartTypes[page] || "visits";
                 return (
-                  <div key={page} className="bg-gray-700 rounded-lg p-6 relative">
+                  <div
+                    key={page}
+                    className="bg-gray-700 rounded-lg p-6 relative"
+                  >
                     <button
-                      onClick={() => setLineChartTypes(prev => ({...prev, [page]: prev[page] === 'visits' ? 'time' : 'visits'}))}
+                      onClick={() =>
+                        setLineChartTypes((prev) => ({
+                          ...prev,
+                          [page]:
+                            prev[page] === "visits" ? "time" : "visits",
+                        }))
+                      }
                       className="absolute top-0 right-0 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition z-10 shadow-md"
                     >
-                      {currentType === 'visits' ? 'Time Spent' : 'Visits'}
+                      {currentType === "visits" ? "Time Spent" : "Visits"}
                     </button>
                     <h3 className="text-lg font-semibold text-white text-center mt-6 mb-4">
-                      {getDisplayName(page)} - {currentType === 'visits' ? 'Visits' : 'Time Spent'} Over Time
+                      {getDisplayName(page)} -{" "}
+                      {currentType === "visits"
+                        ? "Visits"
+                        : "Time Spent"}{" "}
+                      Over Time
                     </h3>
                     <ResponsiveContainer width="100%" height={300}>
                       <LineChart data={data}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="#374151"
+                        />
                         <XAxis
                           dataKey="time"
                           stroke="#9CA3AF"
-                          tickFormatter={(value) => value.split('-')[1]} // Show hour
+                          tickFormatter={(value) =>
+                            value.split("-")[1]
+                          }
                         />
                         <YAxis stroke="#9CA3AF" />
                         <Tooltip
@@ -262,15 +282,34 @@ export default function Analytics() {
                             borderRadius: "8px",
                           }}
                           labelStyle={{ color: "#F3F4F6" }}
-                          labelFormatter={(value) => `Hour: ${value.split('-')[1]}`}
-                          formatter={currentType === 'time' ? (value) => [formatTime(value), "Time Spent"] : undefined}
+                          labelFormatter={(value) =>
+                            `Hour: ${value.split("-")[1]}`
+                          }
+                          formatter={
+                            currentType === "time"
+                              ? (value) => [formatTime(value), "Time Spent"]
+                              : undefined
+                          }
                         />
                         <Line
                           type="monotone"
-                          dataKey={currentType === 'visits' ? 'visits' : 'totalTime'}
-                          stroke={currentType === 'visits' ? '#3B82F6' : '#10B981'}
+                          dataKey={
+                            currentType === "visits"
+                              ? "visits"
+                              : "totalTime"
+                          }
+                          stroke={
+                            currentType === "visits"
+                              ? "#3B82F6"
+                              : "#10B981"
+                          }
                           strokeWidth={2}
-                          dot={{ fill: currentType === 'visits' ? '#3B82F6' : '#10B981' }}
+                          dot={{
+                            fill:
+                              currentType === "visits"
+                                ? "#3B82F6"
+                                : "#10B981",
+                          }}
                         />
                       </LineChart>
                     </ResponsiveContainer>
