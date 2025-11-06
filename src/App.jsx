@@ -12,7 +12,8 @@ import Product from "./pages/Product";
 import About from "./pages/About";
 import Analytics from "./pages/Analytics";
 
-const API_BASE = import.meta.env.VITE_API_URL || "/api";
+// ✅ Use environment variable from .env
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 /* ---------------- Page Time Tracker Hook ---------------- */
 function usePageTimer() {
@@ -30,15 +31,13 @@ function usePageTimer() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ page: prevPage, timeSpent }),
-      }).catch((e) => console.error("Error sending duration:", e));
+      }).catch((e) => console.error("⚠️ Error sending duration:", e));
     }
 
     sessionStorage.setItem("currentPage", location.pathname);
     setStartTime(now);
   }, [location]);
 }
-
-
 
 /* ---------------- Wrapper for Router Context ---------------- */
 function PageTrackerWrapper() {
@@ -57,10 +56,26 @@ function PageTrackerWrapper() {
 function App() {
   const [type, setType] = useState("");
   const [data, setData] = useState("");
+  const [backendStatus, setBackendStatus] = useState("checking"); // ✅ For status indicator
 
   useEffect(() => {
     initTracker();
     sessionStorage.setItem("currentPage", window.location.pathname);
+
+    // ✅ Check backend connection on startup
+    const checkBackend = async () => {
+      try {
+        const res = await fetch(`${API_BASE.replace(/\/api$/, "")}/`);
+        if (res.ok) {
+          setBackendStatus("online");
+        } else {
+          setBackendStatus("offline");
+        }
+      } catch {
+        setBackendStatus("offline");
+      }
+    };
+    checkBackend();
   }, []);
 
   const sendEvent = async () => {
@@ -79,9 +94,9 @@ function App() {
       });
       setType("");
       setData("");
-      alert("Event sent successfully!");
+      alert("✅ Event sent successfully!");
     } catch (err) {
-      alert("Failed to send event — check backend connection!");
+      alert("❌ Failed to send event — check backend connection!");
       console.error(err);
     }
   };
@@ -94,7 +109,22 @@ function App() {
             <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-4">
               📈 Big Data Web Analytics
             </h1>
-            <p className="text-gray-300 text-lg">Track user interactions and page analytics in real-time</p>
+            <p className="text-gray-300 text-lg">
+              Track user interactions and page analytics in real-time
+            </p>
+
+            {/* ✅ Backend connection status indicator */}
+            <div className="mt-4">
+              {backendStatus === "checking" && (
+                <span className="text-yellow-400">⏳ Checking backend...</span>
+              )}
+              {backendStatus === "online" && (
+                <span className="text-green-400">🟢 Backend Connected</span>
+              )}
+              {backendStatus === "offline" && (
+                <span className="text-red-400">🔴 Backend Offline</span>
+              )}
+            </div>
           </header>
 
           <nav className="flex justify-center space-x-6 mb-8">
@@ -124,9 +154,34 @@ function App() {
             </Link>
           </nav>
 
-          
-
           <PageTrackerWrapper />
+
+          {/* ✅ Optional: quick event sender (for manual testing) */}
+          <div className="mt-10 bg-gray-800 p-4 rounded-xl">
+            <h2 className="text-xl font-semibold mb-3">Send Custom Event</h2>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                placeholder="Event type (e.g. button_click)"
+                className="p-2 rounded-md text-black flex-1"
+              />
+              <input
+                type="text"
+                value={data}
+                onChange={(e) => setData(e.target.value)}
+                placeholder="Event data (optional)"
+                className="p-2 rounded-md text-black flex-1"
+              />
+              <button
+                onClick={sendEvent}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-semibold"
+              >
+                🚀 Send
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </Router>
