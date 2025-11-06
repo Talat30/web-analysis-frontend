@@ -13,7 +13,8 @@ import About from "./pages/About";
 import Analytics from "./pages/Analytics";
 
 // ✅ Use environment variable from .env
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL;
+
 
 /* ---------------- Page Time Tracker Hook ---------------- */
 function usePageTimer() {
