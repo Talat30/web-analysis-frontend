@@ -1,15 +1,19 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
-// https://vite.dev/config/
+// ✅ Detect environment (local vs Render)
+const isProduction = process.env.NODE_ENV === "production";
+
 export default defineConfig({
   plugins: [react()],
   server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5001',
-        changeOrigin: true,
-      },
-    },
+    proxy: !isProduction
+      ? {
+          "/api": {
+            target: "http://localhost:5001", // local backend
+            changeOrigin: true,
+          },
+        }
+      : undefined, // No proxy in production
   },
-})
+});
