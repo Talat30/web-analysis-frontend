@@ -10,7 +10,7 @@ export default defineConfig({
     proxy: !isProduction
       ? {
           "/api": {
-            target: "http://localhost:5001", // local backend
+            target: "https://web-analysis-backend-server.onrender.com", // local backend
             changeOrigin: true,
           },
         }
