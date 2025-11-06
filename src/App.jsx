@@ -13,7 +13,8 @@ import About from "./pages/About";
 import Analytics from "./pages/Analytics";
 
 // ✅ Use environment variable from .env
-const API_BASE = import.meta.env.VITE_API_URL;
+const API_BASE = import.meta.env.VITE_API_URL || "https://web-analysis-backend-server.onrender.com";
+
 
 
 /* ---------------- Page Time Tracker Hook ---------------- */
